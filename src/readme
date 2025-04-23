@@ -1,0 +1,56 @@
+run command npm start -- "/Users/vlad/YOUTUBE/auto-tts/test/The Story of Stillness.txt"
+
+folder structure:
+
+# Auto-TTS Script Runner
+
+## 🧪 How to Run
+
+Use the following command to run the script:
+
+```bash
+npm start -- "/path/to/your/script.txt"
+```
+
+Example:
+```bash
+npm start -- "/Users/vlad/YOUTUBE/auto-tts/test/The Story of Stillness.txt"
+```
+
+## 📁 Folder Structure & Required Files
+
+Each script file must be placed in a folder with the following additional required files:
+
+```
+📂 your-folder/
+├── your-script.txt          # Main text script file (input for TTS)
+├── config.yaml              # Configuration for voices (per language)
+├── apikey.txt               # Your ElevenLabs API key (plain text)
+```
+
+### File Details:
+
+- **Script TXT File**: Must follow this format:
+  ```
+  Title of the story
+  _en-0_: Hello and welcome.
+  _es-0_: Hola y bienvenidos.
+  ```
+
+- **config.yaml**: YAML file with voice config per language (example):
+  ```yaml
+  en:
+    voice_id: abc123
+    stability: 0.5
+    similarity_boost: 0.5
+  es:
+    voice_id: xyz456
+    stability: 0.6
+    similarity_boost: 0.6
+  ```
+
+- **apikey.txt**: A file containing your ElevenLabs API key in plain text (no line breaks or quotes).
+
+## 📦 Output
+
+The generated audio files (.mp3) will be saved in the same folder as the input `.txt` file, using the segment keys as filenames (e.g., `en-0.mp3`, `es-0.mp3`).

@@ -5,6 +5,7 @@ import { synthesizeText, getCharacterLimit } from './api';
 import path from 'path';
 import fs from 'fs';
 import { ElevenLabsClient } from 'elevenlabs';
+import { ensureSilenceFile, appendSilenceToFile } from './audioUtils';
 
 const PROCESSED_FILE = 'processed.txt';
 
@@ -31,6 +32,7 @@ async function main() {
   const outputBasePath = path.join(scriptDir, 'audio');
   const apiKeyPath = path.join(scriptDir, 'apikey.txt');
   const processedPath = path.join(scriptDir, PROCESSED_FILE);
+  const silencePath = ensureSilenceFile(scriptDir);
 
   if (!fs.existsSync(configPath)) {
     logError(`Missing config.yaml at: ${configPath}`);
@@ -88,6 +90,7 @@ async function main() {
     try {
       logInfo(`Synthesizing: ${idKey}`);
       await synthesizeText(client, key, text, voiceConfig, outputBasePath);
+      appendSilenceToFile(outputFile, silencePath); 
       logSuccess(`Saved to ${outputFile}`);
       saveProcessedKey(processedPath, idKey);
     } catch (e) {

@@ -5,6 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import { logError, logInfo } from './logger';
 import { pipeline } from 'stream/promises';
+import axios from 'axios';
 
 export async function synthesizeText(
   client: ElevenLabsClient,
@@ -28,19 +29,34 @@ export async function synthesizeText(
         voice_settings: {
           stability: config.stability ?? 0.75,
           similarity_boost: config.similarity_boost ?? 0.75,
+          speed: config.speed ?? 1.0
         },
       });
 
       logInfo(`Writing audio to file: ${outputFile}`);
       await pipeline(stream, fs.createWriteStream(outputFile));
-      logInfo(`Successfully created: ${outputFile}`);
       return;
-    } catch (err) {
-      logError(`API call failed for ${key} (attempt ${attempts + 1}): ${err instanceof Error ? err.stack : err}`);
+    } catch (error) {
       attempts++;
-      if (attempts < 5) await delay(10000);
+      logError(`Attempt ${attempts} failed for ${key}: ${error}`);
+      await delay(1000 * attempts);
     }
   }
 
-  throw new Error(`Failed to synthesize ${key} after 5 attempts.`);
+  throw new Error(`Failed to synthesize after 5 attempts: ${key}`);
+}
+
+export async function getCharacterLimit(apiKey: string): Promise<number> {
+  try {
+    const response = await axios.get('https://api.elevenlabs.io/v1/user/subscription', {
+      headers: {
+        'xi-api-key': apiKey,
+      },
+    });
+    const { character_limit, character_count } = response.data;
+    return character_limit - character_count;
+  } catch (error) {
+    logError(`Failed to fetch character limit: ${error}`);
+    return 0;
+  }
 }

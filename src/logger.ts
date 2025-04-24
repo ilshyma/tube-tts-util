@@ -1,8 +1,33 @@
-import chalk from 'chalk';
+import fs from 'fs';
+import path from 'path';
 
-export const logInfo = (msg: string) => console.log(chalk.blue('[INFO]'), msg);
-export const logSuccess = (msg: string) => console.log(chalk.green('[SUCCESS]'), msg);
-export const logError = (msg: string) => console.error(chalk.red('[ERROR]'), msg);
-export const logWarn = (msg: string) => console.warn(chalk.yellow('[WARN]'), msg);
+let logFilePath = 'log.txt';
 
+export function initLogger(outputDir: string) {
+  logFilePath = path.join(outputDir, 'log.txt');
+}
 
+function writeLogToFile(message: string) {
+  const timestamp = new Date().toISOString();
+  fs.appendFileSync(logFilePath, `[${timestamp}] ${message}\n`);
+}
+
+export function logInfo(message: string) {
+  console.log(`ℹ️ ${message}`);
+  writeLogToFile(`INFO: ${message}`);
+}
+
+export function logSuccess(message: string) {
+  console.log(`✅ ${message}`);
+  writeLogToFile(`SUCCESS: ${message}`);
+}
+
+export function logError(message: string) {
+  console.error(`❌ ${message}`);
+  writeLogToFile(`ERROR: ${message}`);
+}
+
+export function logWarn(message: string) {
+  console.warn(`⚠️ ${message}`);
+  writeLogToFile(`WARN: ${message}`);
+}

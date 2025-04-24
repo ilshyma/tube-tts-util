@@ -6,6 +6,7 @@ export type VoiceConfig = {
   voice_id: string;
   stability?: number;
   similarity_boost?: number;
+  speed?: number;
 };
 
 export type ConfigMap = Record<string, VoiceConfig>;

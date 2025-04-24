@@ -93,6 +93,8 @@ async function main() {
       appendSilenceToFile(outputFile, silencePath); 
       logSuccess(`Saved to ${outputFile}`);
       saveProcessedKey(processedPath, idKey);
+      logInfo(`sleep...`)
+      await delay(6000);
     } catch (e) {
       logError(`Failed to synthesize ${idKey}: ${e}`);
     }

@@ -14,7 +14,6 @@ export async function synthesizeText(
   config: VoiceConfig,
   outputDir: string
 ) {
-  logInfo(`Creating directory (if not exists): ${outputDir}`);
   fs.mkdirSync(outputDir, { recursive: true });
 
   const outputFile = path.join(outputDir, `${key}.mp3`);
@@ -47,6 +46,7 @@ export async function synthesizeText(
 }
 
 export async function getCharacterLimit(apiKey: string): Promise<number> {
+  // console.log("getCharacterLimit with apikey " + apiKey);
   try {
     const response = await axios.get('https://api.elevenlabs.io/v1/user/subscription', {
       headers: {

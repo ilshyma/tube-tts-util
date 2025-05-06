@@ -1,3 +1,4 @@
+
 import { parseScriptFile, delay } from './utils';
 import { loadVoiceConfig } from './config';
 import { initLogger, logInfo, logSuccess, logError, logWarn } from './logger';
@@ -5,7 +6,7 @@ import { synthesizeText, getCharacterLimit } from './api';
 import path from 'path';
 import fs from 'fs';
 import { ElevenLabsClient } from 'elevenlabs';
-import { ensureSilenceFile, appendSilenceToFile } from './audioUtils';
+import { ensureSilenceFile, appendSilenceToFile, generateSilenceFile } from './audioUtils';
 
 const PROCESSED_FILE = 'processed.txt';
 
@@ -63,15 +64,33 @@ async function main() {
   for (const { key, text } of segments) {
     const idKey = `_${key}_`;
     const outputFile = path.join(outputBasePath, `${key}.mp3`);
-    const lang = key.split('-')[0];
-
-    if (isSingleLang && lang !== onlyLang) {
-      logWarn(`Skipping ${key}: only '${onlyLang}' is configured in config.yaml`);
-      continue;
-    }
+    const lang = key.split('-')[0].toLowerCase();
 
     if (processedKeys.has(idKey)) {
       logInfo(`Skipping already processed: ${idKey}`);
+      continue;
+    }
+
+    // Handle pause keys
+    if (lang === 'pause') {
+      const duration = parseFloat(text);
+      if (isNaN(duration) || duration <= 0) {
+        logWarn(`Invalid pause duration at ${key}: "${text}"`);
+        continue;
+      }
+      try {
+        logInfo(`Generating pause: ${idKey} (${duration}s)`);
+        await generateSilenceFile(duration, outputFile);
+        logSuccess(`Saved pause to ${outputFile}`);
+        saveProcessedKey(processedPath, idKey);
+      } catch (e) {
+        logError(`Failed to generate pause ${idKey}: ${e}`);
+      }
+      continue;
+    }
+
+    if (isSingleLang && lang !== onlyLang) {
+      logWarn(`Skipping ${key}: only '${onlyLang}' is configured in config.yaml`);
       continue;
     }
 
@@ -82,6 +101,7 @@ async function main() {
     }
 
     const available = await getCharacterLimit(apiKey);
+    logInfo(`available characters count: (${available})`);
     if (text.length > available) {
       logError(`Text length (${text.length}) exceeds available characters (${available}). Replace API key.`);
       process.exit(1);
@@ -90,7 +110,7 @@ async function main() {
     try {
       logInfo(`Synthesizing: ${idKey}`);
       await synthesizeText(client, key, text, voiceConfig, outputBasePath);
-      appendSilenceToFile(outputFile, silencePath); 
+      // appendSilenceToFile(outputFile, silencePath); 
       logSuccess(`Saved to ${outputFile}`);
       saveProcessedKey(processedPath, idKey);
       logInfo(`sleep...`)

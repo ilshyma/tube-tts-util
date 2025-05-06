@@ -15,11 +15,13 @@ export async function parseScriptFile(filePath: string): Promise<{ title: string
 
 
   const segments = lines.slice(1).map((line, index) => {
-    const match = line.match(/^_([a-z]{2}-\d+)_:\s*(.+)$/i);
+    const match = line.trim().match(/^([a-z]{2,5}-\d+):\s*(.+)$/i);
     if (!match) {
       throw new Error(`Invalid line format at line ${index + 2}: "${line}"`);
     }
-    const [, key, text] = match;
+
+    let [, key, text] = match;
+    key = key.toLowerCase(); // нормализация ключей, например Ism-2 → ism-2
     console.log(`Line ${index + 2}: Parsed key: "${key}", text: "${text.trim()}"`); 
     return { key, text: text.trim() };
   });
